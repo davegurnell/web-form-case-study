@@ -2,11 +2,11 @@ package form
 
 sealed trait Rule[A, B] {
   def apply(value: A): Result[B] = this match {
+    case ZipRule(rule1, rule2)     => rule1(value).zip(rule2(value))
     case PureRule(func)            => func(value)
     case MapRule(rule, func)       => rule(value).map(func)
-    case FlatMapRule(rule, func)   => rule(value).flatMap(func).apply(value)
+    case FlatMapRule(rule, func)   => rule(value).flatMap(ans => func(ans).apply(value))
     case AndThenRule(rule1, rule2) => rule1(value).flatMap(rule2.apply)
-    case ZipRule(rule1, rule2)     => rule1(value).zip(rule2(value))
   }
 
   def map[C](func: B => C): Rule[A, C] =
